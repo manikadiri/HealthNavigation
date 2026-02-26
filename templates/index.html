@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AI Smart Health Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20260225j') }}">
+</head>
+<body>
+<div id="app-splash" class="app-splash">
+  <div class="splash-glow"></div>
+  <div class="splash-ring ring-a"></div>
+  <div class="splash-ring ring-b"></div>
+  <div class="splash-inner">
+    <div class="splash-mark"><i class="fa-solid fa-heart-pulse"></i></div>
+    <h1>HealthNav</h1>
+    <p>AI Smart Health Navigator</p>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+  APP SHELL
+════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOP NAV -->
+  <header id="topnav">
+    <div class="nav-left">
+      <div class="logo-mark">
+        <i class="fa-solid fa-heart-pulse"></i>
+      </div>
+      <div class="nav-brand">
+        <span class="brand-name">HealthNav</span>
+        <span class="brand-tag">AI Powered</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <select id="lang-select" onchange="App.changeLang(this.value)" title="Language">
+        <option value="en">🇬🇧 EN</option>
+        <option value="te">🇮🇳 తె</option>
+        <option value="hi">🇮🇳 हि</option>
+      </select>
+      <button class="icon-btn" onclick="App.openEmergency()" title="Emergency">
+        <i class="fa-solid fa-phone-volume"></i>
+      </button>
+      <div id="user-auth" style="margin-left:10px;">
+        <!-- updated by JS: login link or user name -->
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGES -->
+  <main id="pages">
+
+    <!-- ───── HOME ───── -->
+    <section id="page-home" class="page">
+      <div class="hero-wrap">
+        <div class="hero-card">
+          <div class="hero-orbs"></div>
+          <div class="hero-content">
+            <p class="hero-greeting" data-i18n="greeting">👋 Good day! How can we help?</p>
+            <h1 class="hero-title" data-i18n="hero_title">Your AI Health<br><em>Navigator</em></h1>
+            <div class="hero-badge"><i class="fa-solid fa-robot"></i> <span>No signup needed — Guest Mode</span></div>
+          </div>
+          <div class="hero-pulse-ring"></div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-head">
+        <h2 data-i18n="quick_actions">Quick Actions</h2>
+      </div>
+      <div class="quick-grid">
+        <div class="q-card" onclick="App.navTo('disease')">
+          <div class="q-icon" style="--c1:#0ea5e9;--c2:#0284c7"><i class="fa-solid fa-stethoscope"></i></div>
+          <h3 data-i18n="qa_disease">Disease Search</h3>
+          <p data-i18n="qa_disease_sub">AI explanation & tips</p>
+        </div>
+        <div class="q-card" onclick="App.navTo('hospitals')">
+          <div class="q-icon" style="--c1:#10b981;--c2:#059669"><i class="fa-solid fa-hospital"></i></div>
+          <h3 data-i18n="qa_hospitals">Find Hospitals</h3>
+          <p data-i18n="qa_hospitals_sub">Rated & verified near you</p>
+        </div>
+        <div class="q-card" onclick="App.navTo('token')">
+          <div class="q-icon" style="--c1:#8b5cf6;--c2:#7c3aed"><i class="fa-solid fa-ticket"></i></div>
+          <h3 data-i18n="qa_token">Book Token</h3>
+          <p data-i18n="qa_token_sub">Skip the queue smartly</p>
+        </div>
+        <div class="q-card" onclick="App.navTo('schemes')">
+          <div class="q-icon" style="--c1:#f59e0b;--c2:#d97706"><i class="fa-solid fa-hand-holding-heart"></i></div>
+          <h3 data-i18n="qa_schemes">Gov. Schemes</h3>
+          <p data-i18n="qa_schemes_sub">Free healthcare benefits</p>
+        </div>
+        <div class="q-card" onclick="App.navTo('advice')">
+          <div class="q-icon" style="--c1:#ef4444;--c2:#dc2626"><i class="fa-solid fa-heart-circle-plus"></i></div>
+          <h3>Health Advice</h3>
+          <p>Personal guidance & related tips</p>
+        </div>
+      </div>
+      <div class="quick-searches">
+        <div class="quick-search-item">
+          <label for="qa-disease-input">Quick Disease Search</label>
+          <div class="quick-search-row">
+            <input
+              type="text"
+              id="qa-disease-input"
+              placeholder="Type disease or symptom..."
+              autocomplete="off"
+              onkeydown="if(event.key==='Enter')App.quickActionDiseaseSearch()">
+            <button type="button" onclick="App.quickActionDiseaseSearch()">
+              <i class="fa-solid fa-stethoscope"></i> Search
+            </button>
+          </div>
+        </div>
+        <div class="quick-search-item">
+          <label for="qa-hospital-input">Quick Hospital Search</label>
+          <div class="quick-search-row hospital-search-row">
+            <input
+              type="text"
+              id="qa-hospital-input"
+              placeholder="Type hospital name or specialty..."
+              autocomplete="off"
+              onkeydown="if(event.key==='Enter')App.quickActionHospitalSearch()">
+            <select id="qa-location-filter">
+              <option value="">All Locations</option>
+            </select>
+            <button type="button" onclick="App.quickActionHospitalSearch()">
+              <i class="fa-solid fa-hospital"></i> Find
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Searches -->
+      <div id="recent-wrap" class="hidden">
+        <div class="section-head">
+          <h2 data-i18n="recent_searches">Recent Searches</h2>
+          <button class="text-btn" onclick="App.clearHistory()" data-i18n="clear">Clear</button>
+        </div>
+        <div id="recent-list" class="recent-chips"></div>
+      </div>
+
+      <!-- Health Tips -->
+      <div class="section-head"><h2 data-i18n="health_tips">Daily Health Tips</h2></div>
+      <div class="tips-scroll">
+        <div class="tip-pill"><span>💧</span> Drink 8+ glasses of water daily</div>
+        <div class="tip-pill"><span>🥗</span> Eat 5 servings of fruits & vegetables</div>
+        <div class="tip-pill"><span>🏃</span> 30 min walk daily reduces heart risk</div>
+        <div class="tip-pill"><span>😴</span> 7-8 hours sleep boosts immunity</div>
+        <div class="tip-pill"><span>🧘</span> Deep breathing reduces blood pressure</div>
+        <div class="tip-pill"><span>🚭</span> Quitting smoking is the best health decision</div>
+      </div>
+
+      <!-- Emergency Numbers -->
+      <div class="section-head"><h2 data-i18n="emg_numbers">Emergency Numbers</h2></div>
+      <div class="emg-strip">
+        <div class="emg-num" onclick="alert('Calling 108...')"><span class="num">108</span><span class="lbl">Ambulance</span></div>
+        <div class="emg-num" onclick="alert('Calling 104...')"><span class="num">104</span><span class="lbl">Health Line</span></div>
+        <div class="emg-num" onclick="alert('Calling 181...')"><span class="num">181</span><span class="lbl">Women Help</span></div>
+        <div class="emg-num" onclick="alert('Calling 1098...')"><span class="num">1098</span><span class="lbl">Child Help</span></div>
+      </div>
+    </section>
+
+    <!-- ───── HEALTH ADVICE ───── -->
+    <section id="page-advice" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="App.goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h1>Health Advice</h1>
+      </div>
+
+      <div class="search-container">
+        <div class="advice-search">
+          <input type="text" id="advice-input" placeholder="Example: stress, weight loss, better sleep"
+            autocomplete="off" onkeydown="if(event.key==='Enter')App.searchHealthAdvice()">
+          <button id="advice-search-btn" onclick="App.searchHealthAdvice()">
+            <span id="advice-btn-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <div id="advice-spinner" class="btn-spinner hidden"></div>
+          </button>
+        </div>
+      </div>
+
+      <div id="advice-empty" class="empty-state">
+        <div class="empty-icon">💡</div>
+        <p>Enter your health goal to get related advice and practical steps.</p>
+      </div>
+
+      <div id="advice-result" class="hidden result-area">
+        <div class="result-header">
+          <div class="ai-chip"><i class="fa-solid fa-robot"></i> AI Advice</div>
+          <h2 id="advice-title"></h2>
+        </div>
+        <div class="result-desc-card">
+          <p id="advice-summary"></p>
+        </div>
+
+        <div class="two-col-cards">
+          <div class="dos-card">
+            <h3><i class="fa-solid fa-circle-check"></i> Recommended</h3>
+            <ul id="advice-dos"></ul>
+          </div>
+          <div class="donts-card">
+            <h3><i class="fa-solid fa-circle-xmark"></i> Avoid</h3>
+            <ul id="advice-donts"></ul>
+          </div>
+        </div>
+
+        <div class="disclaimer-box" style="margin-top:12px">
+          <i class="fa-solid fa-user-doctor"></i>
+          <p><strong>When to consult a doctor:</strong> <span id="advice-when-doctor"></span></p>
+        </div>
+      </div>
+
+      <div class="chatbot-wrap">
+        <div class="section-head"><h2><i class="fa-solid fa-comments"></i> Health Chatbot</h2></div>
+        <div class="chat-starters">
+          <button type="button" class="q-pill" onclick="App.askStarterQuestion('I have headache and mild fever. What should I do now?')">Headache + fever</button>
+          <button type="button" class="q-pill" onclick="App.askStarterQuestion('How can I improve sleep naturally in one week?')">Improve sleep</button>
+          <button type="button" class="q-pill" onclick="App.askStarterQuestion('What foods should I avoid for high BP?')">High BP food doubts</button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+          <div class="chat-msg bot">Ask me any health doubt. I can guide you with practical next steps.</div>
+        </div>
+        <div class="chat-input-row">
+          <input
+            type="text"
+            id="chat-input"
+            placeholder="Ask your health doubt..."
+            autocomplete="off"
+            onkeydown="if(event.key==='Enter')App.sendChatMessage()">
+          <button type="button" id="chat-send-btn" onclick="App.sendChatMessage()">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── AUTH / LOGIN / SIGNUP ───── -->
+    <section id="page-auth" class="page active">
+      <div class="auth-screen">
+        <div class="auth-brand">
+          <div class="auth-brand-icon"><i class="fa-solid fa-heart"></i></div>
+          <h1>HealthNav</h1>
+          <p>AI Powered</p>
+          <button type="button" class="auth-lang-chip" onclick="App.changeLang('en')">EN</button>
+        </div>
+
+        <div class="auth-container">
+          <h2 id="auth-title">Login</h2>
+          <form id="login-form">
+            <div class="auth-toggle">
+              <button type="button" id="mode-password" class="auth-toggle-btn active" onclick="App.setLoginMode('password')">Login with Password</button>
+              <button type="button" id="mode-otp" class="auth-toggle-btn" onclick="App.setLoginMode('otp')">Login with OTP</button>
+            </div>
+
+            <label class="auth-label" for="login-mobile">Mobile Number</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-phone"></i>
+              <input type="tel" id="login-mobile" placeholder="Enter 10-digit mobile" maxlength="15" required>
+            </div>
+
+            <div id="password-row">
+              <label class="auth-label" for="login-password">Password</label>
+              <div class="auth-input-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="login-password" placeholder="Enter password" required>
+              </div>
+            </div>
+
+            <div id="otp-row" class="otp-row hidden">
+              <label class="auth-label" for="login-otp">OTP</label>
+              <div class="auth-input-wrap">
+                <i class="fa-solid fa-shield"></i>
+                <input type="text" id="login-otp" placeholder="Enter OTP" maxlength="6">
+                <button type="button" class="otp-btn" onclick="App.requestOtp()">Send OTP</button>
+              </div>
+            </div>
+
+            <a href="#" class="forgot-link" onclick="return false;">Forgot Password?</a>
+            <button type="button" class="auth-submit-btn" onclick="App.login()">Login</button>
+            <p class="text-center">Don't have an account? <a href="#" onclick="App.showSignup();return false;">Sign Up</a></p>
+          </form>
+
+          <form id="signup-form" class="hidden">
+            <label class="auth-label" for="signup-name">Name</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-user"></i>
+              <input type="text" id="signup-name" placeholder="Enter your name" required>
+            </div>
+
+            <label class="auth-label" for="signup-mobile">Mobile Number</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-phone"></i>
+              <input type="tel" id="signup-mobile" placeholder="Enter 10-digit mobile" maxlength="15" required>
+            </div>
+
+            <label class="auth-label" for="signup-password">Password</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-lock"></i>
+              <input type="password" id="signup-password" placeholder="Create password" required>
+            </div>
+
+            <label class="auth-label" for="signup-confirm-password">Confirm Password</label>
+            <div class="auth-input-wrap">
+              <i class="fa-solid fa-lock"></i>
+              <input type="password" id="signup-confirm-password" placeholder="Confirm password" required>
+            </div>
+
+            <button type="button" class="auth-submit-btn" onclick="App.signup()">Sign Up</button>
+            <p class="text-center">Already have an account? <a href="#" onclick="App.showLogin();return false;">Login</a></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── DISEASE SEARCH ───── -->
+    <section id="page-disease" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="App.goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h1 data-i18n="disease_title">AI Disease Info</h1>
+      </div>
+
+      <div class="search-container">
+        <div class="disease-search">
+          <input type="text" id="disease-input" placeholder="search" autocomplete="off"
+            onkeydown="if(event.key==='Enter')App.searchDisease()">
+          <button id="search-btn" onclick="App.searchDisease()">
+            <span id="search-btn-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <div id="search-spinner" class="btn-spinner hidden"></div>
+          </button>
+        </div>
+        <div class="quick-pills">
+          <span class="q-pill" onclick="App.quickSearch('Diabetes')">Diabetes</span>
+          <span class="q-pill" onclick="App.quickSearch('Fever')">Fever</span>
+          <span class="q-pill" onclick="App.quickSearch('Hypertension')">Hypertension</span>
+          <span class="q-pill" onclick="App.quickSearch('Cancer')">Cancer</span>
+          <span class="q-pill" onclick="App.quickSearch('Heart disease')">Heart</span>
+        </div>
+      </div>
+
+      <div id="disease-empty" class="empty-state">
+        <div class="empty-icon">🔬</div>
+        <p>Enter a disease name or symptom to get AI-powered health information</p>
+      </div>
+
+      <div id="disease-result" class="hidden result-area">
+        <div class="result-header">
+          <div class="ai-chip"><i class="fa-solid fa-robot"></i> AI Result</div>
+          <h2 id="res-title"></h2>
+        </div>
+        <div class="result-desc-card">
+          <p id="res-desc"></p>
+          <div id="res-emergency" class="emergency-alert hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>This may be a medical emergency. Call 108 immediately!</strong>
+          </div>
+        </div>
+        <div class="specialist-chip-wrap">
+          <div class="spec-chip"><i class="fa-solid fa-user-doctor"></i> See a: <strong id="res-specialist"></strong></div>
+          <button class="find-hosp-btn" onclick="App.findHospitalsForDisease()"><i class="fa-solid fa-hospital"></i> Find Hospitals</button>
+        </div>
+
+        <div class="two-col-cards">
+          <div class="dos-card">
+            <h3><i class="fa-solid fa-circle-check"></i> Do's</h3>
+            <ul id="res-dos"></ul>
+          </div>
+          <div class="donts-card">
+            <h3><i class="fa-solid fa-circle-xmark"></i> Don'ts</h3>
+            <ul id="res-donts"></ul>
+          </div>
+        </div>
+
+        <div class="section-head" style="margin-top:20px"><h2>🍽️ Diet & Nutrition</h2></div>
+        <div id="res-food" class="lifestyle-grid"></div>
+
+        <div class="section-head"><h2>🛡️ Prevention & Lifestyle</h2></div>
+        <div id="res-prevention" class="lifestyle-grid"></div>
+
+        <div class="disclaimer-box">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <p><strong>Medical Disclaimer:</strong> This information is for educational purposes only and does not substitute professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── HOSPITALS ───── -->
+    <section id="page-hospitals" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="App.goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h1 data-i18n="hospitals_title">Find Hospitals</h1>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="hosp-search" placeholder="Search hospitals..." oninput="App.filterHospitals()">
+        </div>
+        <select id="city-filter" onchange="App.filterHospitals()">
+          <option value="">📍 All Cities</option>
+        </select>
+      </div>
+
+      <div class="spec-filter">
+        <button class="spec-btn active" onclick="App.filterSpec('',this)" data-i18n="all">All</button>
+        <button class="spec-btn" onclick="App.filterSpec('Cardiology',this)">❤️ Cardiology</button>
+        <button class="spec-btn" onclick="App.filterSpec('Oncology',this)">🧬 Cancer</button>
+        <button class="spec-btn" onclick="App.filterSpec('Orthopedic',this)">🦴 Ortho</button>
+        <button class="spec-btn" onclick="App.filterSpec('Neurology',this)">🧠 Neuro</button>
+        <button class="spec-btn" onclick="App.filterSpec('aarogyasri',this)">✔ Aarogyasri</button>
+      </div>
+
+      <div id="hospitals-loading" class="loading-state hidden"><div class="loader"></div><p>Finding hospitals...</p></div>
+      <div id="hospitals-empty" class="empty-state hidden"><div class="empty-icon">🏥</div><p>No hospitals found for selected filters.</p></div>
+      <div id="hospital-list" class="hosp-list"></div>
+    </section>
+
+    <!-- ───── HOSPITAL DETAIL ───── -->
+    <section id="page-hospital-detail" class="page">
+      <div class="detail-hero" id="detail-hero">
+        <button class="back-btn-white" onclick="App.goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="detail-icon" id="detail-icon">🏥</div>
+        <h1 id="detail-name">Hospital Name</h1>
+        <p id="detail-address"><i class="fa-solid fa-location-dot"></i> Address</p>
+        <div class="detail-meta">
+          <span class="meta-badge"><i class="fa-solid fa-star"></i> <span id="detail-rating"></span></span>
+          <span class="meta-badge" id="detail-spec-badge"></span>
+          <span class="meta-badge" id="detail-emergency-badge"></span>
+        </div>
+      </div>
+
+      <div class="detail-tabs" id="detail-tabs">
+        <button class="d-tab active" onclick="App.switchTab('specialists',this)"><i class="fa-solid fa-user-doctor"></i> Specialists</button>
+        <button class="d-tab" onclick="App.switchTab('departments',this)"><i class="fa-solid fa-building-columns"></i> Depts</button>
+        <button class="d-tab" onclick="App.switchTab('schemes',this)"><i class="fa-solid fa-hand-holding-heart"></i> Schemes</button>
+      </div>
+
+      <div id="tab-specialists" class="tab-pane active"></div>
+      <div id="tab-departments" class="tab-pane"></div>
+      <div id="tab-schemes" class="tab-pane">
+        <div class="scheme-cat-bar">
+          <button class="scat-btn active" onclick="App.filterSchemesCat('all',this)">All</button>
+          <button class="scat-btn" onclick="App.filterSchemesCat('women',this)">👩 Women</button>
+          <button class="scat-btn" onclick="App.filterSchemesCat('men',this)">👨 Men</button>
+          <button class="scat-btn" onclick="App.filterSchemesCat('child',this)">👶 Child</button>
+          <button class="scat-btn" onclick="App.filterSchemesCat('pregnant',this)">🤱 Pregnant</button>
+        </div>
+        <div id="schemes-content"></div>
+      </div>
+
+      <div class="detail-footer">
+        <a id="detail-phone-btn" class="footer-btn primary"><i class="fa-solid fa-phone"></i> Call Hospital</a>
+        <button class="footer-btn secondary" onclick="App.bookTokenForCurrent()"><i class="fa-solid fa-ticket"></i> Book Token</button>
+      </div>
+    </section>
+
+    <!-- ───── TOKEN ───── -->
+    <section id="page-token" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="App.goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h1 data-i18n="token_title">Smart Queue</h1>
+      </div>
+
+      <!-- Active Token View -->
+      <div id="token-active" class="hidden">
+        <div class="token-card">
+          <div class="token-ring">
+            <div class="token-inner">
+              <span class="token-label" data-i18n="your_token">TOKEN</span>
+              <span class="token-num" id="tok-number">A42</span>
+            </div>
+          </div>
+          <h3 id="tok-hospital"></h3>
+          <p id="tok-status-text" class="tok-status-text"></p>
+        </div>
+
+        <div class="queue-details">
+          <div class="q-stat">
+            <i class="fa-solid fa-people-group"></i>
+            <div>
+              <span class="q-stat-label" data-i18n="people_ahead">People Ahead</span>
+              <span class="q-stat-val" id="tok-ahead">—</span>
+            </div>
+          </div>
+          <div class="q-divider"></div>
+          <div class="q-stat">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+              <span class="q-stat-label" data-i18n="est_wait">Estimated Wait</span>
+              <span class="q-stat-val" id="tok-wait">—</span>
+            </div>
+          </div>
+          <div class="q-divider"></div>
+          <div class="q-stat">
+            <i class="fa-solid fa-ticket"></i>
+            <div>
+              <span class="q-stat-label" data-i18n="current_token">Current Token</span>
+              <span class="q-stat-val" id="tok-current">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-track"><div class="progress-fill" id="tok-progress"></div></div>
+          <span class="progress-label" id="tok-progress-label">Queue moving...</span>
+        </div>
+
+        <div id="tok-alert" class="tok-alert-box"></div>
+
+        <button class="cancel-token-btn" onclick="App.cancelToken()" data-i18n="cancel_token">
+          <i class="fa-solid fa-xmark"></i> Cancel Token
+        </button>
+      </div>
+
+      <!-- Book Token View -->
+      <div id="token-book">
+        <div class="info-banner">
+          <i class="fa-solid fa-circle-info"></i>
+          <p>Select a hospital below to book your smart queue token and avoid long waits.</p>
+        </div>
+        <div class="section-head"><h2 data-i18n="select_hospital">Select Hospital</h2></div>
+        <div id="token-hosp-list" class="hosp-list"></div>
+      </div>
+    </section>
+
+    <!-- ───── SCHEMES ───── -->
+    <section id="page-schemes" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="App.goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h1>Government Schemes</h1>
+      </div>
+      <div class="schemes-hero">
+        <p>Access free healthcare benefits from government schemes available across hospitals.</p>
+      </div>
+      <div class="schemes-search-wrap">
+        <div class="schemes-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="schemes-search" placeholder="Search schemes..." oninput="App.searchAllSchemes()">
+        </div>
+      </div>
+      <div class="scheme-cat-bar" style="margin:16px 16px 0">
+        <button class="scat-btn active" onclick="App.filterAllSchemes('all',this)">All</button>
+        <button class="scat-btn" onclick="App.filterAllSchemes('women',this)">👩 Women</button>
+        <button class="scat-btn" onclick="App.filterAllSchemes('men',this)">👨 Men</button>
+        <button class="scat-btn" onclick="App.filterAllSchemes('child',this)">👶 Child</button>
+        <button class="scat-btn" onclick="App.filterAllSchemes('pregnant',this)">🤱 Pregnant</button>
+      </div>
+      <div id="all-schemes-list" class="schemes-page-list"></div>
+    </section>
+
+  </main><!-- /pages -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottomnav">
+    <button class="bnav-item active" onclick="App.navTo('home',this)">
+      <i class="fa-solid fa-house"></i><span data-i18n="nav_home">Home</span>
+    </button>
+    <button class="bnav-item" onclick="App.navTo('disease',this)">
+      <i class="fa-solid fa-stethoscope"></i><span data-i18n="nav_disease">Disease</span>
+    </button>
+    <button class="bnav-item" onclick="App.navTo('hospitals',this)">
+      <i class="fa-solid fa-hospital"></i><span data-i18n="nav_hospitals">Hospitals</span>
+    </button>
+    <button class="bnav-item" onclick="App.navTo('token',this)">
+      <i class="fa-solid fa-ticket"></i><span data-i18n="nav_token">Token</span>
+    </button>
+    <button class="bnav-item" onclick="App.navTo('schemes',this)">
+      <i class="fa-solid fa-hand-holding-heart"></i><span data-i18n="nav_schemes">Schemes</span>
+    </button>
+  </nav>
+</div><!-- /app -->
+
+<!-- EMERGENCY MODAL -->
+<div id="emg-overlay" class="overlay" onclick="if(event.target===this)App.closeEmergency()">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <h2><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i> Emergency Contacts</h2>
+    <div class="emg-grid">
+      <div class="emg-card" onclick="alert('Calling 108...')"><div class="emg-num-big" style="color:#ef4444">108</div><div class="emg-lbl">Ambulance</div></div>
+      <div class="emg-card" onclick="alert('Calling 104...')"><div class="emg-num-big" style="color:#0ea5e9">104</div><div class="emg-lbl">Health Helpline</div></div>
+      <div class="emg-card" onclick="alert('Calling 181...')"><div class="emg-num-big" style="color:#ec4899">181</div><div class="emg-lbl">Women Safety</div></div>
+      <div class="emg-card" onclick="alert('Calling 1098...')"><div class="emg-num-big" style="color:#f59e0b">1098</div><div class="emg-lbl">Child Helpline</div></div>
+    </div>
+    <button class="close-sheet" onclick="App.closeEmergency()">Close</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script src="{{ url_for('static', filename='js/app.js', v='20260225j') }}"></script>
+</body>
+</html>
